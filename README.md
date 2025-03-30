@@ -112,9 +112,7 @@ struct Outfit {
 - Contemporary
 
 ## Next Steps
-- Add user authentication
 - Implement backend integration
-- Add social sharing features
 - Include style recommendations
 - Add favorite outfits collection
 

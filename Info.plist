@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Camera permissions -->
+    <key>NSCameraUsageDescription</key>
+    <string>StyleSwipe needs camera access to capture your photo for virtual outfit try-on.</string>
+    
+    <!-- Optional: Photo Library permissions if you want users to select from their photos instead -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>StyleSwipe needs access to your photo library to select a photo for virtual outfit try-on.</string>
+</dict>
+</plist>

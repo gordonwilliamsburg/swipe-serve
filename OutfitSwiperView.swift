@@ -20,12 +20,8 @@ struct OutfitSwiperView: View {
                 navigationManager.navigate(to: .styleResults)
             }) {
                 Text("See Results")
-                    .font(StyleSwipeTheme.buttonFont)
-                    .foregroundColor(StyleSwipeTheme.secondary)
-                    .padding()
-                    .background(StyleSwipeTheme.accent)
-                    .clipShape(Capsule())
-            }
+                    .font(StyleSwipeTheme.bodyFont)
+            }.outlinedButtonStyle()
             .padding(.top, 40)
             
             Spacer()

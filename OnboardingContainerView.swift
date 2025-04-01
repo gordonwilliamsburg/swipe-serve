@@ -23,7 +23,7 @@ struct OnboardingContainerView: View {
                         navigationManager.previousOnboardingStep()
                     }) {
                         Text("Back")
-                            .font(StyleSwipeTheme.buttonFont)
+                            .font(StyleSwipeTheme.bodyFont)
                             .foregroundColor(StyleSwipeTheme.primary)
                             .padding()
                     }
@@ -36,12 +36,8 @@ struct OnboardingContainerView: View {
                     navigationManager.nextOnboardingStep()
                 }) {
                     Text("Next")
-                        .font(StyleSwipeTheme.buttonFont)
-                        .foregroundColor(StyleSwipeTheme.secondary)
-                        .padding()
-                        .background(StyleSwipeTheme.accent)
-                        .clipShape(Capsule())
-                }
+                        .font(StyleSwipeTheme.bodyFont)
+                }.outlinedButtonStyle()
             }
             .padding(.horizontal, StyleSwipeTheme.standardPadding)
         }

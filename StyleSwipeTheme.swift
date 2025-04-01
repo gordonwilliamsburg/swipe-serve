@@ -2,19 +2,50 @@ import SwiftUI
 
 struct StyleSwipeTheme {
     // Colors
-    static let primary = Color(hex: "1A1A1A")
-    static let secondary = Color(hex: "FFFFFF")
-    static let accent = Color(hex: "D4AF37")
-    static let background = Color(hex: "F5F5F5")
+    static let primary = Color(hex: "2B2B2B")  // Dark text color
+    static let secondary = Color(hex: "FFFFFF") // White
+    static let accent = Color.clear   // Transparent for buttons
+    static let background = Color(hex: "F5F5F5") // Paper-like background
     
-    // Fonts
-    static let headlineFont = Font.system(.title, design: .default).weight(.bold)
-    static let bodyFont = Font.system(.body, design: .default)
-    static let buttonFont = Font.system(.body, design: .default).weight(.medium)
+    // Button specific properties
+    static let buttonBorder = Color(hex: "2B2B2B") // Dark border color
+    static let buttonTextColor = Color(hex: "2B2B2B") // Dark text color
+    static let buttonCornerRadius: CGFloat = 25
+    static let buttonBorderWidth: CGFloat = 1
+    
+    // Fonts - using system serif fonts instead of Times New Roman
+    static let headlineFont = Font.custom("TimesNewRomanPSMT", size: 40)
+    static let subheadlineFont = Font.custom("TimesNewRomanPSMT", size: 16)
+    static let bodyFont = Font.custom("TimesNewRomanPSMT", size: 20)
+    static let buttonFont = Font.custom("TimesNewRomanPSMT", size: 16)
     
     // Sizes
-    static let standardPadding: CGFloat = 16
+    static let standardPadding: CGFloat = 24
     static let cardSpacing: CGFloat = 20
+}
+
+// Add this new ButtonStyle struct in the same file
+struct OutlinedButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundColor(StyleSwipeTheme.buttonTextColor)
+            .padding(.horizontal, 30)
+            .padding(.vertical, 10)
+            .background(
+                Capsule()
+                    .strokeBorder(StyleSwipeTheme.buttonBorder, lineWidth: StyleSwipeTheme.buttonBorderWidth)
+                    .background(StyleSwipeTheme.accent)
+                    .clipShape(Capsule())
+            )
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+    }
+}
+
+// Add this extension for easy button style application
+extension View {
+    func outlinedButtonStyle() -> some View {
+        self.buttonStyle(OutlinedButtonStyle())
+    }
 }
 
 // Helper extension for hex color creation

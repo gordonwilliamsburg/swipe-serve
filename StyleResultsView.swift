@@ -40,12 +40,8 @@ struct StyleResultsView: View {
                 navigationManager.reset()
             }) {
                 Text("Try Again")
-                    .font(StyleSwipeTheme.buttonFont)
-                    .foregroundColor(StyleSwipeTheme.secondary)
-                    .padding()
-                    .background(StyleSwipeTheme.accent)
-                    .clipShape(Capsule())
-            }
+                    .font(StyleSwipeTheme.bodyFont)
+            }.outlinedButtonStyle()
             .padding(.bottom, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

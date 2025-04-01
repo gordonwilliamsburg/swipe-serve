@@ -64,11 +64,14 @@ struct WelcomeView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             
-            Image(systemName: "tshirt.fill")
+            // Replace the t-shirt icon with the new image
+            Image("front_page_swipe_serve")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 120, height: 120)
-                .foregroundColor(StyleSwipeTheme.accent)
+                .frame(maxWidth: .infinity)
+                .frame(height: 400)
+                .cornerRadius(20)
+                .padding(.horizontal)
         }
         .padding()
     }

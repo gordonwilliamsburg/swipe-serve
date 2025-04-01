@@ -15,10 +15,9 @@ struct OnboardingContainerView: View {
                 ReadyForPhotoView()
             }
             
-            // Navigation buttons
-            HStack {
-                // Back button (hidden on first step)
-                if navigationManager.onboardingStep != .welcome {
+            // Navigation buttons - only for non-welcome screens
+            if navigationManager.onboardingStep != .welcome {
+                HStack {
                     Button(action: {
                         navigationManager.previousOnboardingStep()
                     }) {
@@ -27,49 +26,69 @@ struct OnboardingContainerView: View {
                             .foregroundColor(StyleSwipeTheme.primary)
                             .padding()
                     }
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        navigationManager.nextOnboardingStep()
+                    }) {
+                        Text("Next")
+                            .font(StyleSwipeTheme.bodyFont)
+                    }.outlinedButtonStyle()
                 }
-                
-                Spacer()
-                
-                // Next button
-                Button(action: {
-                    navigationManager.nextOnboardingStep()
-                }) {
-                    Text("Next")
-                        .font(StyleSwipeTheme.bodyFont)
-                }.outlinedButtonStyle()
+                .padding(.horizontal, StyleSwipeTheme.standardPadding)
             }
-            .padding(.horizontal, StyleSwipeTheme.standardPadding)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(StyleSwipeTheme.background)
     }
 }
 
-// Placeholder for the Welcome screen
 struct WelcomeView: View {
+    @EnvironmentObject private var navigationManager: NavigationManager
+    
     var body: some View {
-        VStack(spacing: 30) {
-            Text("StyleSwipe")
-                .font(StyleSwipeTheme.headlineFont)
-                .foregroundColor(StyleSwipeTheme.primary)
+        ZStack {
+            VStack(spacing: 0) {
+                Spacer().frame(height: 40)
+                
+                Image("front_page_swipe_serve")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: UIScreen.main.bounds.height * 0.8)
+                    .clipped()
+            }
             
-            Text("Discover your fashion style through our interactive experience")
-                .font(StyleSwipeTheme.bodyFont)
-                .foregroundColor(StyleSwipeTheme.primary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-            
-            // Replace the t-shirt icon with the new image
-            Image("front_page_swipe_serve")
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: .infinity)
-                .frame(height: 400)
-                .cornerRadius(20)
-                .padding(.horizontal)
+            // Overlay content
+            VStack {
+                // Title
+                VStack(spacing: -20) { // Changed from 10 to 0 for tighter text spacing
+                    Text("Swipe")
+                        .font(.system(size: 60, weight: .regular, design: .serif))
+                        .foregroundColor(StyleSwipeTheme.primary)
+                    Text("&")
+                        .font(.system(size: 40, weight: .regular, design: .serif))
+                        .foregroundColor(StyleSwipeTheme.primary)
+                    Text("Serve")
+                        .font(.system(size: 60, weight: .regular, design: .serif))
+                        .foregroundColor(StyleSwipeTheme.primary)
+                }
+                .padding(.top, 40)
+                
+                Spacer()
+                
+                Button(action: {
+                    navigationManager.nextOnboardingStep()
+                }) {
+                    Text("Get Started")
+                        .font(.system(size: 20, weight: .regular, design: .serif))
+                }
+                .outlinedButtonStyle()
+                .padding(.horizontal, 40)
+                .padding(.bottom, 60)
+            }
         }
-        .padding()
     }
 }
 

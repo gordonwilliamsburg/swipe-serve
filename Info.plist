@@ -9,5 +9,21 @@
     <!-- Optional: Photo Library permissions if you want users to select from their photos instead -->
     <key>NSPhotoLibraryUsageDescription</key>
     <string>StyleSwipe needs access to your photo library to select a photo for virtual outfit try-on.</string>
+    
+    <!-- Bundle identifiers -->
+    <key>CFBundleIdentifier</key>
+    <string>nesrine.lavipere</string>
+
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+
+    <key>CFBundleVersion</key>
+    <string>1</string>
+
+    <key>CFBundleName</key>
+    <string>Swipe Serve</string>
+    
+    <key>CFBundleIconName</key>
+    <string>AppIcon</string>
 </dict>
 </plist>

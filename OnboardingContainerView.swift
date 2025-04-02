@@ -92,12 +92,88 @@ struct WelcomeView: View {
     }
 }
 
-// Placeholder for style preferences screen
-struct StylePreferencesView: View {
+struct AestheticCard: View {
+    let name: String
+    @Binding var isSelected: Bool
+    
     var body: some View {
-        Text("Style Preferences")
-            .font(StyleSwipeTheme.headlineFont)
-            .foregroundColor(StyleSwipeTheme.primary)
+        ZStack {
+            // Image from assets with full path
+            Image("\(name)_cover")
+                .resizable()
+                .scaledToFill()
+                .frame(width: UIScreen.main.bounds.width * 0.8, height: UIScreen.main.bounds.width * 0.8 * 0.8) // 5:4 ratio
+                .clipped()
+                .overlay(
+                    Rectangle()
+                        .fill(Color.black.opacity(0.3))
+                )
+            
+            // Aesthetic name
+            Text(name.replacingOccurrences(of: "_", with: " ").capitalized)
+                .font(.system(size: 24, weight: .medium, design: .serif))
+                .foregroundColor(.white)
+              
+            // Selection indicator
+            if isSelected {
+                VStack {
+                    HStack {
+                        Spacer()
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.white)
+                            .font(.system(size: 24))
+                            .padding(12)
+                    }
+                    Spacer()
+                }
+            }
+        }
+        .cornerRadius(12)
+        .shadow(radius: 5)
+        .onTapGesture {
+            isSelected.toggle()
+        }
+    }
+}
+
+struct StylePreferencesView: View {
+    @State private var selectedAesthetics: Set<String> = []
+    let aesthetics = ["biker", "corporate_goth", "old_money"]
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            Text("Choose Your Style")
+                .font(StyleSwipeTheme.headlineFont)
+                .foregroundColor(StyleSwipeTheme.primary)
+                .padding(.top, 40)
+            
+            Text("Select the aesthetics that inspire you")
+                .font(StyleSwipeTheme.bodyFont)
+                .foregroundColor(StyleSwipeTheme.primary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            
+            ScrollView {
+                VStack(spacing: 20) {
+                    ForEach(aesthetics, id: \.self) { aesthetic in
+                        AestheticCard(
+                            name: aesthetic,
+                            isSelected: Binding(
+                                get: { selectedAesthetics.contains(aesthetic) },
+                                set: { isSelected in
+                                    if isSelected {
+                                        selectedAesthetics.insert(aesthetic)
+                                    } else {
+                                        selectedAesthetics.remove(aesthetic)
+                                    }
+                                }
+                            )
+                        )
+                    }
+                }
+                .padding(.horizontal)
+            }
+        }
     }
 }
 

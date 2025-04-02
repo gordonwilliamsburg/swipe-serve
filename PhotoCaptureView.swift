@@ -7,8 +7,40 @@ class CameraManager: NSObject, ObservableObject {
     @Published var photoOutput = AVCapturePhotoOutput()
     @Published var preview: AVCaptureVideoPreviewLayer?
     @Published var recentImage: UIImage?
+    
+    // Get the documents directory path
+    private static func getDocumentsDirectory() -> URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
+    
+    // Get the path for storing the user's photo
+    private static var userPhotoURL: URL {
+        getDocumentsDirectory().appendingPathComponent("user_photo.jpg")
+    }
+    
+    // Save image to documents directory
+    static func saveImage(_ image: UIImage) {
+        if let data = image.jpegData(compressionQuality: 0.8) {
+            try? data.write(to: userPhotoURL)
+        }
+    }
+    
+    // Load image from documents directory
+    static func loadSavedImage() -> UIImage? {
+        try? UIImage(data: Data(contentsOf: userPhotoURL))
+    }
+    
+    // Add public method to delete saved image
+    static func deleteSavedImage() {
+        try? FileManager.default.removeItem(at: userPhotoURL)
+    }
+    
     override init() {
         super.init()
+        // Load saved image if it exists
+        if let savedImage = CameraManager.loadSavedImage() {
+            self.recentImage = savedImage
+        }
     }
     func checkPermissions() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -61,6 +93,8 @@ extension CameraManager: AVCapturePhotoCaptureDelegate {
            let image = UIImage(data: imageData) {
             DispatchQueue.main.async {
                 self.recentImage = image
+                // Save the image to local storage
+                CameraManager.saveImage(image)
             }
         }
     }
@@ -112,9 +146,10 @@ struct PhotoCaptureView: View {
             if cameraManager.recentImage != nil {
                 // Navigation buttons after photo is taken
                 HStack(spacing: 40) {
-                    // Back button (retake photo)
                     Button(action: {
                         cameraManager.recentImage = nil
+                        // Use the public method instead
+                        CameraManager.deleteSavedImage()
                     }) {
                         Text("Retake")
                             .font(StyleSwipeTheme.buttonFont)

@@ -69,61 +69,67 @@ struct OutfitSwiperView: View {
             
             Spacer()
             
-            ZStack {
-                ForEach(outfits.suffix(3), id: \.self) { outfit in
-                    OutfitCard(outfit: outfit) { accepted in
-                        withAnimation {
-                            if accepted {
-                                acceptedOutfits.insert(outfit)
+            if !outfits.isEmpty {
+                ZStack {
+                    ForEach(outfits.suffix(3), id: \.self) { outfit in
+                        OutfitCard(outfit: outfit) { accepted in
+                            withAnimation {
+                                if accepted {
+                                    acceptedOutfits.insert(outfit)
+                                }
+                                removeOutfit(outfit)
                             }
-                            removeOutfit(outfit)
                         }
                     }
-                }
-            }
-            
-            Spacer()
-            
-            // Action buttons
-            HStack(spacing: 40) {
-                // Reject button
-                Button(action: {
-                    withAnimation {
-                        if let last = outfits.last {
-                            removeOutfit(last)
-                        }
-                    }
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 50))
-                        .foregroundColor(.red)
                 }
                 
-                // Accept button
-                Button(action: {
-                    withAnimation {
-                        if let last = outfits.last {
-                            acceptedOutfits.insert(last)
-                            removeOutfit(last)
+                Spacer()
+                
+                // Action buttons
+                HStack(spacing: 40) {
+                    // Reject button
+                    Button(action: {
+                        withAnimation {
+                            if let last = outfits.last {
+                                removeOutfit(last)
+                            }
                         }
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 50))
+                            .foregroundColor(.red)
                     }
-                }) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 50))
-                        .foregroundColor(.green)
+                    
+                    // Accept button
+                    Button(action: {
+                        withAnimation {
+                            if let last = outfits.last {
+                                acceptedOutfits.insert(last)
+                                removeOutfit(last)
+                            }
+                        }
+                    }) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 50))
+                            .foregroundColor(.green)
+                    }
                 }
-            }
-            .padding(.bottom, 40)
-            
-            // Show results button when all cards are swiped
-            if outfits.isEmpty {
-                Button(action: {
-                    navigationManager.navigate(to: .styleResults)
-                }) {
-                    Text("See Results")
+                .padding(.bottom, 40)
+            } else {
+                // Show this when all cards are swiped
+                VStack(spacing: 20) {
+                    Text("All outfits reviewed!")
                         .font(StyleSwipeTheme.bodyFont)
-                }.outlinedButtonStyle()
-                .padding(.bottom, 20)
+                        .foregroundColor(StyleSwipeTheme.primary)
+                    
+                    Button(action: {
+                        navigationManager.navigate(to: .styleResults)
+                    }) {
+                        Text("See Results")
+                            .font(StyleSwipeTheme.bodyFont)
+                    }.outlinedButtonStyle()
+                }
+                .padding(.bottom, 40)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -133,13 +139,6 @@ struct OutfitSwiperView: View {
     private func removeOutfit(_ outfit: String) {
         if let index = outfits.firstIndex(of: outfit) {
             outfits.remove(at: index)
-        }
-        
-        // Navigate to results when all outfits are swiped
-        if outfits.isEmpty {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                navigationManager.navigate(to: .styleResults)
-            }
         }
     }
 }

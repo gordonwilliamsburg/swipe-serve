@@ -108,26 +108,47 @@ struct PhotoCaptureView: View {
             
             Spacer()
             
-            // Capture button
-            Button(action: {
-                if cameraManager.recentImage != nil {
-                    // Proceed to outfit swiper screen
-                    navigationManager.navigate(to: .outfitSwiper)
-                } else {
-                    cameraManager.takePhoto()
-                }
-            }) {
-                ZStack {
-                    Circle()
-                        .fill(StyleSwipeTheme.accent)
-                        .frame(width: 80, height: 80)
+            // Show different buttons based on whether photo is taken
+            if cameraManager.recentImage != nil {
+                // Navigation buttons after photo is taken
+                HStack(spacing: 40) {
+                    // Back button (retake photo)
+                    Button(action: {
+                        cameraManager.recentImage = nil
+                    }) {
+                        Text("Retake")
+                            .font(StyleSwipeTheme.buttonFont)
+                            .foregroundColor(StyleSwipeTheme.primary)
+                    }
+                    .outlinedButtonStyle()
                     
-                    Circle()
-                        .stroke(StyleSwipeTheme.secondary, lineWidth: 3)
-                        .frame(width: 70, height: 70)
+                    // Next button
+                    Button(action: {
+                        navigationManager.navigate(to: .outfitSwiper)
+                    }) {
+                        Text("Next")
+                            .font(StyleSwipeTheme.buttonFont)
+                    }
+                    .outlinedButtonStyle()
                 }
+                .padding(.bottom, 40)
+            } else {
+                // Capture button when no photo is taken
+                Button(action: {
+                    cameraManager.takePhoto()
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(StyleSwipeTheme.accent)
+                            .frame(width: 80, height: 80)
+                        
+                        Circle()
+                            .stroke(StyleSwipeTheme.secondary, lineWidth: 3)
+                            .frame(width: 70, height: 70)
+                    }
+                }
+                .padding(.bottom, 40)
             }
-            .padding(.bottom, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(StyleSwipeTheme.background)

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct OutfitCard: View {
-    let outfit: String // This will be your outfit image name
+    let outfit: String
     @State private var offset = CGSize.zero
     @State private var color: Color = .clear
     
@@ -12,7 +12,7 @@ struct OutfitCard: View {
             Image(outfit)
                 .resizable()
                 .scaledToFill()
-                .frame(width: UIScreen.main.bounds.width * 0.8, height: UIScreen.main.bounds.height * 0.6)
+                .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.7) // Increased size
                 .cornerRadius(20)
                 .overlay(
                     ZStack {
@@ -42,10 +42,10 @@ struct OutfitCard: View {
                         let width = gesture.translation.width
                         if width > 100 {
                             offset.width = 1000
-                            onSwipe(true) // Accepted
+                            onSwipe(true)
                         } else if width < -100 {
                             offset.width = -1000
-                            onSwipe(false) // Rejected
+                            onSwipe(false)
                         } else {
                             offset = .zero
                         }
@@ -57,7 +57,7 @@ struct OutfitCard: View {
 
 struct OutfitSwiperView: View {
     @EnvironmentObject private var navigationManager: NavigationManager
-    @State private var outfits = ["outfit1", "outfit2", "outfit3"] // Replace with your outfit images
+    @State private var outfits = ["outfit1", "outfit2", "outfit3"]
     @State private var acceptedOutfits: Set<String> = []
     
     var body: some View {
@@ -85,8 +85,8 @@ struct OutfitSwiperView: View {
                 
                 Spacer()
                 
-                // Action buttons
-                HStack(spacing: 40) {
+                // Action buttons with increased spacing
+                HStack(spacing: 120) { // Increased spacing from 40 to 120
                     // Reject button
                     Button(action: {
                         withAnimation {
@@ -116,7 +116,6 @@ struct OutfitSwiperView: View {
                 }
                 .padding(.bottom, 40)
             } else {
-                // Show this when all cards are swiped
                 VStack(spacing: 20) {
                     Text("All outfits reviewed!")
                         .font(StyleSwipeTheme.bodyFont)

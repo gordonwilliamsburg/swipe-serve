@@ -18,7 +18,7 @@ struct StyleSwipeTheme {
     static let subheadlineFont = Font.custom("TimesNewRomanPSMT", size: 16)
     static let bodyFont = Font.custom("TimesNewRomanPSMT", size: 20)
     static let buttonFont = Font.custom("TimesNewRomanPSMT", size: 16)
-    
+
     // Sizes
     static let standardPadding: CGFloat = 24
     static let cardSpacing: CGFloat = 20
@@ -74,3 +74,4 @@ extension Color {
         )
     }
 }
+

@@ -80,7 +80,7 @@ struct OutfitCard: View {
 struct OutfitSwiperView: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @StateObject private var tryOnService = TryOnService()
-    @State private var outfits = ["outfit1", "outfit2", "outfit3"]
+    @State private var outfits = ["outfit1"]
     @State private var acceptedOutfits: Set<String> = []
     @State private var tryOnImages: [String: UIImage] = [:] // Store try-on results
     @State private var isProcessingTryOns = true // New state to track processing
@@ -198,10 +198,19 @@ struct OutfitSwiperView: View {
             guard let clothingImage = UIImage(named: outfit) else { return nil }
             
             let task = Task<UIImage, Error> {
-                try await tryOnService.generateTryOn(
-                    userPhoto: userPhoto,
-                    clothingImage: clothingImage
-                )
+                do {
+                    // First generate the try-on
+                    let tryOnImage = try await tryOnService.generateTryOn(
+                        userPhoto: userPhoto,
+                        clothingImage: clothingImage
+                    )
+                    
+                    // Then remove the background
+                    return try await tryOnService.removeBackground(from: tryOnImage)
+                } catch {
+                    print("Detailed error for \(outfit): \(error.localizedDescription)")
+                    throw error
+                }
             }
             
             return (outfit, task)

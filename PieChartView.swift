@@ -1,4 +1,4 @@
-import SwiftUI // Add this if not already present
+import SwiftUI
 
 struct PieSlice: Shape {
     let startAngle: Double
@@ -21,17 +21,32 @@ struct PieSlice: Shape {
     }
 }
 
-struct PieChartView: View { // Add ': View' here
+struct PieChartView: View {
     let compositions: [StyleComposition]
     
     var body: some View {
         ZStack {
             ForEach(compositions) { composition in
-                PieSlice(
-                    startAngle: startAngle(for: composition),
-                    endAngle: endAngle(for: composition)
-                )
-                .fill(composition.color)
+                ZStack {
+                    PieSlice(
+                        startAngle: startAngle(for: composition),
+                        endAngle: endAngle(for: composition)
+                    )
+                    .fill(composition.color)
+                    
+                    // Add percentage text
+                    GeometryReader { geometry in
+                        Text("\(Int(round(composition.percentage)))%")
+                            .font(StyleSwipeTheme.bodyFont)
+                            .foregroundColor(.white)
+                            .position(
+                                percentagePosition(
+                                    for: composition,
+                                    in: geometry.size
+                                )
+                            )
+                    }
+                }
             }
         }
         .aspectRatio(1, contentMode: .fit)
@@ -45,5 +60,24 @@ struct PieChartView: View { // Add ': View' here
     
     private func endAngle(for composition: StyleComposition) -> Double {
         startAngle(for: composition) + (composition.percentage * 3.6)
+    }
+    
+    private func percentagePosition(for composition: StyleComposition, in size: CGSize) -> CGPoint {
+        let center = CGPoint(x: size.width / 2, y: size.height / 2)
+        let radius = min(size.width, size.height) / 4 // Position text halfway between center and edge
+        
+        // Calculate the angle for the middle of the slice
+        let startAngle = startAngle(for: composition)
+        let endAngle = endAngle(for: composition)
+        let midAngle = startAngle + (endAngle - startAngle) / 2
+        
+        // Convert angle to radians and adjust for the -90 degree offset
+        let angleInRadians = (midAngle - 90) * .pi / 180
+        
+        // Calculate position
+        let x = center.x + radius * cos(angleInRadians)
+        let y = center.y + radius * sin(angleInRadians)
+        
+        return CGPoint(x: x, y: y)
     }
 }

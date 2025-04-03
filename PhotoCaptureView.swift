@@ -8,6 +8,9 @@ class CameraManager: NSObject, ObservableObject {
     @Published var preview: AVCaptureVideoPreviewLayer?
     @Published var recentImage: UIImage?
     
+    // Add notification when photo is saved
+    static let photoSavedNotification = Notification.Name("PhotoSaved")
+    
     // Get the documents directory path
     private static func getDocumentsDirectory() -> URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -22,6 +25,7 @@ class CameraManager: NSObject, ObservableObject {
     static func saveImage(_ image: UIImage) {
         if let data = image.jpegData(compressionQuality: 0.8) {
             try? data.write(to: userPhotoURL)
+            NotificationCenter.default.post(name: photoSavedNotification, object: nil)
         }
     }
     

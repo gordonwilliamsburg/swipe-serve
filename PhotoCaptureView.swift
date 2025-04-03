@@ -7,7 +7,8 @@ class CameraManager: NSObject, ObservableObject {
     @Published var photoOutput = AVCapturePhotoOutput()
     @Published var preview: AVCaptureVideoPreviewLayer?
     @Published var recentImage: UIImage?
-    
+    @Published var isFrontCamera = true // Add this to track camera position
+    @Published var isShowingSavedImage = false // Add this to control when to show saved image
     // Add notification when photo is saved
     static let photoSavedNotification = Notification.Name("PhotoSaved")
     
@@ -20,7 +21,29 @@ class CameraManager: NSObject, ObservableObject {
     private static var userPhotoURL: URL {
         getDocumentsDirectory().appendingPathComponent("user_photo.jpg")
     }
-    
+    func flipCamera() {
+        session.beginConfiguration()
+        
+        // Remove existing input
+        guard let currentInput = session.inputs.first as? AVCaptureDeviceInput else { return }
+        session.removeInput(currentInput)
+        
+        // Get new camera
+        let newPosition: AVCaptureDevice.Position = isFrontCamera ? .back : .front
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition) else { return }
+        
+        do {
+            let newInput = try AVCaptureDeviceInput(device: device)
+            if session.canAddInput(newInput) {
+                session.addInput(newInput)
+                isFrontCamera.toggle()
+            }
+        } catch {
+            print("Error flipping camera: \(error.localizedDescription)")
+        }
+        
+        session.commitConfiguration()
+    }
     // Save image to documents directory
     static func saveImage(_ image: UIImage) {
         if let data = image.jpegData(compressionQuality: 0.8) {
@@ -29,22 +52,16 @@ class CameraManager: NSObject, ObservableObject {
         }
     }
     
-    // Load image from documents directory
-    static func loadSavedImage() -> UIImage? {
-        try? UIImage(data: Data(contentsOf: userPhotoURL))
-    }
+   
     
     // Add public method to delete saved image
     static func deleteSavedImage() {
         try? FileManager.default.removeItem(at: userPhotoURL)
     }
     
-    override init() {
+     override init() {
         super.init()
-        // Load saved image if it exists
-        if let savedImage = CameraManager.loadSavedImage() {
-            self.recentImage = savedImage
-        }
+        // Don't automatically load saved image on init
     }
     func checkPermissions() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -67,8 +84,9 @@ class CameraManager: NSObject, ObservableObject {
         do {
             session.beginConfiguration()
             
-            // Use front camera
-            guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) else { return }
+            // Use front camera initially
+            let position: AVCaptureDevice.Position = isFrontCamera ? .front : .back
+            guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position) else { return }
             let input = try AVCaptureDeviceInput(device: device)
             
             if session.canAddInput(input) {
@@ -84,10 +102,36 @@ class CameraManager: NSObject, ObservableObject {
             print("Error setting up camera: \(error.localizedDescription)")
         }
     }
+    // Make this a static method
+    static func loadSavedImage() -> UIImage? {
+        try? UIImage(data: Data(contentsOf: userPhotoURL))
+    }
+    // Add method to load saved image
+    func loadSavedImage() {
+        if let savedImage = CameraManager.loadSavedImage() {
+            self.recentImage = savedImage
+            self.isShowingSavedImage = true
+        }
+    }
     
+    // Modify the takePhoto method
     func takePhoto() {
+        isShowingSavedImage = false // Reset this flag when taking new photo
         let settings = AVCapturePhotoSettings()
         photoOutput.capturePhoto(with: settings, delegate: self)
+    }
+    
+    // Modify startNewPhoto method to properly reset everything
+    func startNewPhoto() {
+        recentImage = nil
+        isShowingSavedImage = false
+        
+        // Make sure we're on the main thread when configuring the session
+        DispatchQueue.main.async {
+            self.session.startRunning()
+            // Ensure camera is properly setup
+            self.setupCamera()
+        }
     }
 }
 
@@ -119,6 +163,8 @@ struct CameraPreview: UIViewRepresentable {
     func updateUIView(_ uiView: UIView, context: Context) {}
 }
 
+
+
 struct PhotoCaptureView: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @StateObject private var cameraManager = CameraManager()
@@ -139,8 +185,30 @@ struct PhotoCaptureView: View {
                         .scaledToFit()
                         .frame(height: 400)
                 } else {
-                    CameraPreview(session: cameraManager.session)
-                        .frame(height: 400)
+                    ZStack {
+                        CameraPreview(session: cameraManager.session)
+                            .frame(height: 400)
+                        
+                        // Flip camera button
+                        VStack {
+                            HStack {
+                                Spacer()
+                                Button(action: {
+                                    cameraManager.flipCamera()
+                                }) {
+                                    Image(systemName: "camera.rotate")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(.white)
+                                        .padding(12)
+                                        .background(Color.black.opacity(0.6))
+                                        .clipShape(Circle())
+                                }
+                                .padding(.trailing, 20)
+                                .padding(.top, 20)
+                            }
+                            Spacer()
+                        }
+                    }
                 }
             }
             
@@ -151,9 +219,9 @@ struct PhotoCaptureView: View {
                 // Navigation buttons after photo is taken
                 HStack(spacing: 40) {
                     Button(action: {
-                        cameraManager.recentImage = nil
-                        // Use the public method instead
-                        CameraManager.deleteSavedImage()
+                        CameraManager.deleteSavedImage() // Delete saved image first
+                        cameraManager.startNewPhoto() // Then start new photo session
+                        cameraManager.checkPermissions() // Ensure camera is initialized
                     }) {
                         Text("Retake")
                             .font(StyleSwipeTheme.buttonFont)
@@ -161,7 +229,6 @@ struct PhotoCaptureView: View {
                     }
                     .outlinedButtonStyle()
                     
-                    // Next button
                     Button(action: {
                         navigationManager.navigate(to: .outfitSwiper)
                     }) {
@@ -192,8 +259,13 @@ struct PhotoCaptureView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(StyleSwipeTheme.background)
         .onAppear {
-            cameraManager.checkPermissions()
-            cameraManager.session.startRunning()
+            if cameraManager.recentImage == nil {
+                cameraManager.loadSavedImage()
+                if cameraManager.recentImage == nil {
+                    cameraManager.checkPermissions()
+                    cameraManager.session.startRunning()
+                }
+            }
         }
         .onDisappear {
             cameraManager.session.stopRunning()

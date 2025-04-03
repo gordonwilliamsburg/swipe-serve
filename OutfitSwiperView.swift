@@ -174,16 +174,25 @@ struct OutfitSwiperView: View {
     private func generateTryOns() async {
         guard let userPhoto = CameraManager.loadSavedImage() else { return }
         
-        for outfit in outfits {
-            guard let clothingImage = UIImage(named: outfit) else { continue }
+        tryOnService.isLoading = true
+        
+        let tryOnTasks = outfits.compactMap { outfit -> (String, Task<UIImage, Error>)? in
+            guard let clothingImage = UIImage(named: outfit) else { return nil }
             
-            do {
-                tryOnService.isLoading = true
-                let tryOnImage = try await tryOnService.generateTryOn(
+            let task = Task<UIImage, Error> {
+                try await tryOnService.generateTryOn(
                     userPhoto: userPhoto,
                     clothingImage: clothingImage
                 )
-                
+            }
+            
+            return (outfit, task)
+        }
+        
+        // Await all tasks and collect results
+        for (outfit, task) in tryOnTasks {
+            do {
+                let tryOnImage = try await task.value
                 // Update UI on main thread
                 DispatchQueue.main.async {
                     tryOnImages[outfit] = tryOnImage

@@ -22,6 +22,15 @@ struct StyleSwipeTheme {
     // Sizes
     static let standardPadding: CGFloat = 24
     static let cardSpacing: CGFloat = 20
+
+    static let chartColors: [Color] = [
+        Color(hex: "#FF6B6B"),
+        Color(hex: "#4ECDC4"),
+        Color(hex: "#45B7D1"),
+        Color(hex: "#96CEB4"),
+        Color(hex: "#FFEEAD"),
+        Color(hex: "#D4A5A5")
+    ]
 }
 
 // Add this new ButtonStyle struct in the same file
@@ -74,4 +83,5 @@ extension Color {
         )
     }
 }
+
 

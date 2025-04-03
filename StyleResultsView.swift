@@ -5,37 +5,49 @@ struct StyleResultsView: View {
     
     var body: some View {
         VStack {
-            Text("Your Style Results")
+            Text("Your Style Analysis")
                 .font(StyleSwipeTheme.headlineFont)
                 .foregroundColor(StyleSwipeTheme.primary)
                 .padding(.top, 40)
             
-            Spacer()
-            
-            // Style result placeholder
-            VStack(spacing: 20) {
-                Text("Your style is")
-                    .font(StyleSwipeTheme.bodyFont)
+            if !navigationManager.styleAnalysis.isEmpty {
+                // Pie Chart
+                PieChartView(compositions: navigationManager.styleAnalysis)
+                    .frame(height: 250)
+                    .padding()
                 
-                Text("MINIMAL ELEGANCE")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(StyleSwipeTheme.accent)
-                
-                Text("You prefer clean lines, subtle details, and timeless pieces that create a sophisticated look.")
+                // Legend
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(navigationManager.styleAnalysis) { composition in
+                        HStack {
+                            Circle()
+                                .fill(composition.color)
+                                .frame(width: 20, height: 20)
+                            
+                            Text(composition.aesthetic)
+                                .font(StyleSwipeTheme.bodyFont)
+                            
+                            Spacer()
+                            
+                            Text("\(Int(round(composition.percentage)))%")
+                                .font(StyleSwipeTheme.bodyFont)
+                                .foregroundColor(StyleSwipeTheme.accent)
+                        }
+                    }
+                }
+                .padding()
+                .background(StyleSwipeTheme.secondary)
+                .cornerRadius(20)
+                .padding()
+            } else {
+                Text("No outfits were selected")
                     .font(StyleSwipeTheme.bodyFont)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    .foregroundColor(StyleSwipeTheme.primary)
+                    .padding()
             }
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(StyleSwipeTheme.secondary)
-            .cornerRadius(20)
-            .shadow(radius: 5)
-            .padding()
             
             Spacer()
             
-            // Reset button to start over
             Button(action: {
                 navigationManager.reset()
             }) {

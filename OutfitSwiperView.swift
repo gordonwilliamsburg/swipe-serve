@@ -187,15 +187,51 @@ struct OutfitSwiperView: View {
         }
     }
     
+    // Add this helper method
+    private func getAesthetic(from outfitName: String) -> String {
+        // Split by underscore and take all parts except the last number
+        let components = outfitName.split(separator: "_")
+        if components.count >= 2 {
+            // Join all parts except the last one to handle aesthetics with underscores
+            return components.dropLast().joined(separator: "_")
+        }
+        return ""
+    }
+
+    // Update removeOutfit to check if we should navigate to results
     private func removeOutfit(_ outfit: String) {
-       if let index = outfits.firstIndex(of: outfit) {
+        if let index = outfits.firstIndex(of: outfit) {
             outfits.remove(at: index)
         }
         
-        // If all outfits have been swiped, navigate to results
+        // If all outfits have been swiped, analyze results and navigate
         if outfits.isEmpty {
+            let analysis = analyzeStyle()
+            navigationManager.setStyleAnalysis(analysis) // We'll add this method
             navigationManager.navigate(to: .styleResults)
         }
+    }
+
+    // Add style analysis method
+    private func analyzeStyle() -> [StyleComposition] {
+        // Count accepted outfits by aesthetic
+        var aestheticCounts: [String: Int] = [:]
+        
+        for outfit in acceptedOutfits {
+            let aesthetic = getAesthetic(from: outfit)
+            aestheticCounts[aesthetic, default: 0] += 1
+        }
+        
+        let total = Double(acceptedOutfits.count)
+        
+        // Convert to percentages
+        return aestheticCounts.enumerated().map { index, item in
+            StyleComposition(
+                aesthetic: item.key.replacingOccurrences(of: "_", with: " ").capitalized,
+                percentage: (Double(item.value) / total) * 100,
+                color: StyleSwipeTheme.chartColors[index % StyleSwipeTheme.chartColors.count]
+            )
+        }.sorted { $0.percentage > $1.percentage }
     }
 
     private func generateTryOns() async {

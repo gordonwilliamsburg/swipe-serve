@@ -21,7 +21,12 @@ class NavigationManager: ObservableObject {
     @Published var onboardingStep: OnboardingStep = .welcome
     @Published var swipeImages: [String] = []
     @Published var selectedAesthetics: [String] = []
+    @Published var styleAnalysis: [StyleComposition] = []
 
+    func setStyleAnalysis(_ analysis: [StyleComposition]) {
+        styleAnalysis = analysis
+    }
+    
     func updateSwipeImages(_ images: [String]) {
         swipeImages = images
     }

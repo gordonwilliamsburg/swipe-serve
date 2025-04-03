@@ -142,7 +142,7 @@ struct AestheticCard: View {
 struct StylePreferencesView: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @State private var selectedAesthetics: Set<String> = []
-    let aesthetics = ["biker", "corporate_goth", "old_money", "avant_garde"]
+    let aesthetics = ["biker", "angel", "old_money", "avant_garde", "girl_boss", "grunge", "mob_wife", "romantic", "soft_boi", "mysterious"]
     
     private let columns = [
         GridItem(.flexible(), spacing: 16),

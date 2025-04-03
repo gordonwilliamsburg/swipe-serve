@@ -80,7 +80,7 @@ struct OutfitCard: View {
 struct OutfitSwiperView: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @StateObject private var tryOnService = TryOnService()
-    @State private var outfits = ["outfit1"]
+    @State private var outfits: [String] = []
     @State private var acceptedOutfits: Set<String> = []
     @State private var tryOnImages: [String: UIImage] = [:] // Store try-on results
     @State private var isProcessingTryOns = true // New state to track processing
@@ -174,17 +174,27 @@ struct OutfitSwiperView: View {
                     }
                 }
             }
+            
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(StyleSwipeTheme.background)
+        .onAppear {
+                    // Initialize outfits with the selected images from NavigationManager
+                    outfits = navigationManager.swipeImages
+                }
         .task {
             await generateTryOns()
         }
     }
     
     private func removeOutfit(_ outfit: String) {
-        if let index = outfits.firstIndex(of: outfit) {
+       if let index = outfits.firstIndex(of: outfit) {
             outfits.remove(at: index)
+        }
+        
+        // If all outfits have been swiped, navigate to results
+        if outfits.isEmpty {
+            navigationManager.navigate(to: .styleResults)
         }
     }
 

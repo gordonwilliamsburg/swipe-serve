@@ -19,7 +19,12 @@ enum OnboardingStep {
 class NavigationManager: ObservableObject {
     @Published var currentScreen: AppScreen = .onboarding
     @Published var onboardingStep: OnboardingStep = .welcome
-    
+    @Published var swipeImages: [String] = []
+    @Published var selectedAesthetics: [String] = []
+
+    func updateSwipeImages(_ images: [String]) {
+        swipeImages = images
+    }
     // Navigate to a specific screen
     func navigate(to screen: AppScreen) {
         currentScreen = screen
@@ -31,10 +36,13 @@ class NavigationManager: ObservableObject {
         case .welcome:
             onboardingStep = .stylePreferences
         case .stylePreferences:
-            onboardingStep = .readyForPhoto
+            // Only proceed if there are selected aesthetics
+            if !swipeImages.isEmpty {
+                onboardingStep = .readyForPhoto
+            }
         case .readyForPhoto:
-            // Move to photo capture screen
-            currentScreen = .photoCapture
+            // Correct the flow: go to photo capture first
+            currentScreen = .photoCapture  // This was previously going straight to .outfitSwiper
         }
     }
     

@@ -34,7 +34,12 @@ struct OnboardingContainerView: View {
                     }) {
                         Text("Next")
                             .font(StyleSwipeTheme.bodyFont)
-                    }.outlinedButtonStyle()
+                    }
+                    .outlinedButtonStyle()
+                    .disabled(navigationManager.onboardingStep == .stylePreferences && 
+                             navigationManager.swipeImages.isEmpty)
+                    .opacity(navigationManager.onboardingStep == .stylePreferences && 
+                            navigationManager.swipeImages.isEmpty ? 0.5 : 1)
                 }
                 .padding(.horizontal, StyleSwipeTheme.standardPadding)
             }
@@ -98,31 +103,29 @@ struct AestheticCard: View {
     
     var body: some View {
         ZStack {
-            // Image from assets with full path
             Image("\(name)_cover")
                 .resizable()
                 .scaledToFill()
-                .frame(width: UIScreen.main.bounds.width * 0.8, height: UIScreen.main.bounds.width * 0.8 * 0.8) // 5:4 ratio
+                .frame(width: (UIScreen.main.bounds.width - 48) / 2, // Account for padding and spacing
+                       height: (UIScreen.main.bounds.width - 48) / 2) // Make it square
                 .clipped()
                 .overlay(
                     Rectangle()
                         .fill(Color.black.opacity(0.3))
                 )
             
-            // Aesthetic name
             Text(name.replacingOccurrences(of: "_", with: " ").capitalized)
-                .font(.system(size: 24, weight: .medium, design: .serif))
+                .font(.system(size: 18, weight: .medium, design: .serif)) // Smaller font
                 .foregroundColor(.white)
               
-            // Selection indicator
             if isSelected {
                 VStack {
                     HStack {
                         Spacer()
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.white)
-                            .font(.system(size: 24))
-                            .padding(12)
+                            .font(.system(size: 20)) // Slightly smaller checkmark
+                            .padding(8) // Smaller padding
                     }
                     Spacer()
                 }
@@ -137,8 +140,30 @@ struct AestheticCard: View {
 }
 
 struct StylePreferencesView: View {
+    @EnvironmentObject private var navigationManager: NavigationManager
     @State private var selectedAesthetics: Set<String> = []
-    let aesthetics = ["biker", "corporate_goth", "old_money"]
+    let aesthetics = ["biker", "corporate_goth", "old_money", "avant_garde"]
+    
+    private let columns = [
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16)
+    ]
+    
+    // Generate image names for selected aesthetics and randomize them
+    private func generateRandomizedImageNames() -> [String] {
+        // Collect all image names for selected aesthetics
+        var allImages: [String] = []
+        
+        for aesthetic in selectedAesthetics {
+            // Assuming each aesthetic has 5 images - adjust this number as needed
+            for i in 1...5 {
+                allImages.append("\(aesthetic)_\(i)")
+            }
+        }
+        
+        // Randomize the order
+        return allImages.shuffled()
+    }
     
     var body: some View {
         VStack(spacing: 24) {
@@ -154,7 +179,7 @@ struct StylePreferencesView: View {
                 .padding(.horizontal)
             
             ScrollView {
-                VStack(spacing: 20) {
+                LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(aesthetics, id: \.self) { aesthetic in
                         AestheticCard(
                             name: aesthetic,
@@ -166,6 +191,7 @@ struct StylePreferencesView: View {
                                     } else {
                                         selectedAesthetics.remove(aesthetic)
                                     }
+                                    navigationManager.updateSwipeImages(generateRandomizedImageNames())
                                 }
                             )
                         )

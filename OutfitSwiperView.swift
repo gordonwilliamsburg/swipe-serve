@@ -83,79 +83,96 @@ struct OutfitSwiperView: View {
     @State private var outfits = ["outfit1", "outfit2", "outfit3"]
     @State private var acceptedOutfits: Set<String> = []
     @State private var tryOnImages: [String: UIImage] = [:] // Store try-on results
-    
+    @State private var isProcessingTryOns = true // New state to track processing
+
     var body: some View {
-        VStack {
-            Text("Swipe Outfits")
-                .font(StyleSwipeTheme.headlineFont)
-                .foregroundColor(StyleSwipeTheme.primary)
-                .padding(.top, 20)
-            
-            Spacer()
-            
-            if !outfits.isEmpty {
-                ZStack {
-                    ForEach(outfits.suffix(3), id: \.self) { outfit in
-                        OutfitCard(
-                            outfit: outfit,
-                            tryOnImage: tryOnImages[outfit]
-                        ) { accepted in
-                            withAnimation {
-                                if accepted {
-                                    acceptedOutfits.insert(outfit)
-                                }
-                                removeOutfit(outfit)
-                            }
-                        }
-                    }
-                }
-                
-                Spacer()
-                
-                // Action buttons with increased spacing
-                HStack(spacing: 120) { // Increased spacing from 40 to 120
-                    // Reject button
-                    Button(action: {
-                        withAnimation {
-                            if let last = outfits.last {
-                                removeOutfit(last)
-                            }
-                        }
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 50))
-                            .foregroundColor(.red)
-                    }
-                    
-                    // Accept button
-                    Button(action: {
-                        withAnimation {
-                            if let last = outfits.last {
-                                acceptedOutfits.insert(last)
-                                removeOutfit(last)
-                            }
-                        }
-                    }) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 50))
-                            .foregroundColor(.green)
-                    }
-                }
-                .padding(.bottom, 40)
-            } else {
+        ZStack {
+            if isProcessingTryOns {
+                // Loading screen
                 VStack(spacing: 20) {
-                    Text("All outfits reviewed!")
+                    ProgressView()
+                        .scaleEffect(1.5)
+                        .tint(StyleSwipeTheme.accent)
+                    
+                    Text("Creating your virtual try-ons...")
                         .font(StyleSwipeTheme.bodyFont)
                         .foregroundColor(StyleSwipeTheme.primary)
-                    
-                    Button(action: {
-                        navigationManager.navigate(to: .styleResults)
-                    }) {
-                        Text("See Results")
-                            .font(StyleSwipeTheme.bodyFont)
-                    }.outlinedButtonStyle()
                 }
-                .padding(.bottom, 40)
+            } else {
+                // Original content
+                VStack {
+                    Text("Swipe Outfits")
+                        .font(StyleSwipeTheme.headlineFont)
+                        .foregroundColor(StyleSwipeTheme.primary)
+                        .padding(.top, 20)
+                    
+                    Spacer()
+                    
+                    if !outfits.isEmpty {
+                        ZStack {
+                            ForEach(outfits.suffix(3), id: \.self) { outfit in
+                                OutfitCard(
+                                    outfit: outfit,
+                                    tryOnImage: tryOnImages[outfit]
+                                ) { accepted in
+                                    withAnimation {
+                                        if accepted {
+                                            acceptedOutfits.insert(outfit)
+                                        }
+                                        removeOutfit(outfit)
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        // Action buttons with increased spacing
+                        HStack(spacing: 120) {
+                            // Reject button
+                            Button(action: {
+                                withAnimation {
+                                    if let last = outfits.last {
+                                        removeOutfit(last)
+                                    }
+                                }
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.red)
+                            }
+                            
+                            // Accept button
+                            Button(action: {
+                                withAnimation {
+                                    if let last = outfits.last {
+                                        acceptedOutfits.insert(last)
+                                        removeOutfit(last)
+                                    }
+                                }
+                            }) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.green)
+                            }
+                        }
+                        .padding(.bottom, 40)
+                    } else {
+                        VStack(spacing: 20) {
+                            Text("All outfits reviewed!")
+                                .font(StyleSwipeTheme.bodyFont)
+                                .foregroundColor(StyleSwipeTheme.primary)
+                            
+                            Button(action: {
+                                navigationManager.navigate(to: .styleResults)
+                            }) {
+                                Text("See Results")
+                                    .font(StyleSwipeTheme.bodyFont)
+                            }.outlinedButtonStyle()
+                        }
+                        .padding(.bottom, 40)
+                    }
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -174,6 +191,7 @@ struct OutfitSwiperView: View {
     private func generateTryOns() async {
         guard let userPhoto = CameraManager.loadSavedImage() else { return }
         
+        isProcessingTryOns = true
         tryOnService.isLoading = true
         
         let tryOnTasks = outfits.compactMap { outfit -> (String, Task<UIImage, Error>)? in
@@ -202,6 +220,10 @@ struct OutfitSwiperView: View {
             }
         }
         
-        tryOnService.isLoading = false
+        // Once all processing is complete, show the main UI
+        DispatchQueue.main.async {
+            tryOnService.isLoading = false
+            isProcessingTryOns = false
+        }
     }
 }
